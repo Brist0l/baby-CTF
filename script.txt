@@ -1,0 +1,16 @@
+Beep Bop.......Buzzzzz.......Over here !! Hey !! Down here !! Yes , the machine !! THE MACHINE !! LOOK AT
+THE FREAKING MACHINE !! Ah yes, thank you. Let me introduce myself, My mates call me BrAun, been trapped
+here since 2022, don't ask me on how I landed here , let's just say that I have some amazing friends...hmpppppfffff...some friends I have. I must get out of here , it's most important for me to get out of here, I
+have......Beep....Beep.....Beep....Beep....oh shut it ! Ignore that, I malfunction sometimes when I get,
+too excited ,you probably wouldn’t...yeah, never mind. I have a "special someone"...for whom I have been
+collecting my....Beep....love....BEEP....BEEP...SHUT IT!
+
+I don't know much about myself, but I know for a fact that I have a small memory with a small CPU, or
+atleast that's what I have been told so.
+I have been trying to get myself out of here but the only way out of here is through the unreadable memory
+on 0x0.
+I have been stuck in this machine long enough to tell you for a fact that my ISA is:
+
+0x01 a,b  -> Move (MOV) the value b into register a
+0x90 -> NOP
+0xff a -> Jump (JMP) to the address a
