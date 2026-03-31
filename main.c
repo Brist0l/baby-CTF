@@ -32,7 +32,7 @@ int main(){
 	int magic_val = 0x69;
 	int IP_val_addr = 0x14;
 
-	memcpy(memory,"\x41\x01\x31\x41\x00\x03\x69",offset);
+	memcpy(memory,"\x41\x01\x31\x41\x00\x03\x69",0x8);
 
 	memsee(memory,MEM_SIZE,reserved_start,reserved_end,memory_prev);
 	registersee(registers,registers_prev);
