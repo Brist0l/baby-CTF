@@ -5,6 +5,7 @@
 
 #include"cpu.h"
 
+
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
 #define ANSI_COLOR_YELLOW  "\x1b[33m"
@@ -13,10 +14,12 @@
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
+void destroy(System* s);
+void initsys(System* s);
 bool memchk(unsigned char* mem1,char* mem2,int buf1,int buf2,int n);
-void memsee(unsigned char* mem,int n,int reserved_start,int reserved_end,unsigned char* prev_mem);
+void memsee(System* s,int n,int reserved_start,int reserved_end);
 void read_script(char* name);
-void registersee(Registers *r,Registers *prev_r);
+void registersee(System* s);
 void rand_roast();
 
 #endif

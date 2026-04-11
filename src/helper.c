@@ -7,6 +7,31 @@
 #include "cpu.h"
 #include "helper.h"
 
+void destroy(System *s){
+	free(s->registers);
+	free(s->registers_prev);
+	free(s->memory);
+	free(s->memory_prev);
+	free(s);
+}
+
+void initsys(System *s){
+	srand(time(NULL));
+
+	s->registers = malloc(sizeof(Registers));
+	s->registers_prev = malloc(sizeof(Registers));
+	s->memory = (unsigned char*) malloc(sizeof(unsigned char) *  MEM_SIZE);
+	s->memory_prev = (unsigned char*) malloc(sizeof(unsigned char) * MEM_SIZE);
+
+	// set memory to random variables
+	for(int i = 0; i < MEM_SIZE; i++)
+		s->memory[i] = rand() % 0xff;
+	//memset(memory,0,MEM_SIZE);
+	memset(s->registers,0,sizeof(Registers));
+	memcpy(s->memory_prev,s->memory,MEM_SIZE);
+	memcpy(s->registers_prev,s->registers,sizeof(Registers));
+}
+
 bool memchk(unsigned char* mem1,char* mem2,int buf1,int buf2,int n){
 	for(int i = 0;i < n;i++){
 		//printf("memory : 0x%x at 0x%x\n",*(mem1 + buf1 + i),buf1 + i);
@@ -17,7 +42,7 @@ bool memchk(unsigned char* mem1,char* mem2,int buf1,int buf2,int n){
 	return true;
 }
 
-void memsee(unsigned char* mem,int n,int reserved_start,int reserved_end,unsigned char* prev_mem){
+void memsee(System* s,int n,int reserved_start,int reserved_end){
 	int a = 0;
 	int j = 2;
 	printf("\nMemory (in big endian):\n");
@@ -48,9 +73,9 @@ void memsee(unsigned char* mem,int n,int reserved_start,int reserved_end,unsigne
 		}
 		else{
   			printf(ANSI_COLOR_GREEN);
-			if(*(mem + i) ^ (*(prev_mem + i)))
+			if(*(s->memory + i) ^ (*(s->memory_prev + i)))
   				printf(ANSI_COLOR_YELLOW);
-			printf("%.2x",*(mem + i));
+			printf("%.2x",*(s->memory + i));
   			printf(ANSI_COLOR_RESET);
 		}
 
@@ -63,9 +88,8 @@ void memsee(unsigned char* mem,int n,int reserved_start,int reserved_end,unsigne
 		}
 	}
 
-	memcpy(prev_mem,mem,MEM_SIZE);
+	memcpy(s->memory_prev,s->memory,MEM_SIZE);
 	printf("\n");
-
 }
 
 void read_script(char* name){
@@ -88,7 +112,7 @@ void rand_roast(){
 	int line = 0;
 	int i = 0;
 
-	file = fopen("roast.txt","r");
+	file = fopen("src/story/roast.txt","r");
 
 	while((c[line][i] = fgetc(file)) != EOF){
 		//printf("Line count : %d\n",line);
@@ -110,27 +134,27 @@ void rand_roast(){
 	fclose(file);
 }
 
-void registersee(Registers *r,Registers* prev_r){
+void registersee(System* s){
 	printf("\n");
 
 	for(int i = 0;i < 2;i++){
   		printf(ANSI_COLOR_BLUE);
 		printf("Register %d : ",i);
   		printf(ANSI_COLOR_GREEN);
-		if(r->V[i] ^ prev_r->V[i])
+		if(s->registers->V[i] ^ s->registers_prev->V[i])
   			printf(ANSI_COLOR_YELLOW);
-		printf("0x%.2x\n",r->V[i]);
+		printf("0x%.2x\n",s->registers->V[i]);
   		printf(ANSI_COLOR_RESET);
 	}
 
   	printf(ANSI_COLOR_BLUE);
 	printf("Register IP : ");
   	printf(ANSI_COLOR_GREEN);
-	if(r->IP ^ prev_r->IP)
+	if(s->registers->IP ^ s->registers_prev->IP)
   		printf(ANSI_COLOR_YELLOW);
-	printf("0x%.2x\n",r->IP);
+	printf("0x%.2x\n",s->registers->IP);
   	printf(ANSI_COLOR_RESET);
 
-	memcpy(prev_r,r,sizeof(Registers));
+	memcpy(s->registers_prev,s->registers,sizeof(Registers));
 	printf("\n");
 }

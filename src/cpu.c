@@ -5,47 +5,47 @@
 #include "cpu.h"
 #include "helper.h"
 
-void readinstr(Registers *r,unsigned char* memory){
+void readinstr(System* s){
 	//for(int i = 0; i < 10;i++)
-		//printf("%d => 0x%.2x\n",i,*(memory + r->IP + i));
+		//printf("%d => 0x%.2x\n",i,*(memory + registers->IP + i));
 
-	r->flag[0] = false;
-	r->flag[1] = false;
+	s->registers->flag[0] = false;
+	s->registers->flag[1] = false;
 
-	while(r->IP < MEM_SIZE){
-	//	printf("IP = %x and mem = %x\n",r->IP,memory[r->IP]);
-		switch(memory[r->IP]){
+	while(s->registers->IP < MEM_SIZE){
+	//	printf("IP = %x and mem = %x\n",registers->IP,memory[registers->IP]);
+		switch(s->memory[s->registers->IP]){
 
 			// nop
 			case 0x90:
-				r->IP++;
+				(s->registers->IP)++;
 				break;
 
 			//mov
 			case 0x01:
-				unsigned char regis = memory[++r->IP];
-				unsigned char val = memory[++r->IP];
+				unsigned char regis = s->memory[++(s->registers->IP)];
+				unsigned char val = s->memory[++(s->registers->IP)];
 
 				if(regis < 0 || regis > 2){
 					rand_roast();
 					printf(ANSI_COLOR_BLUE);
 					printf("Hint : ");
 					printf(ANSI_COLOR_RESET);
-					printf("Illegal operation , there are only 2 registers!\n");
+					printf("[at 0x01,MOV]Illegal operation , there are only 2 registers!\n");
 					exit(0);
 				}
 
-				r->V[regis] = val;
-				//printf("Register %d : %x\n",regis,r->V[regis]);
+				s->registers->V[regis] = val;
+				//printf("Register %d : %x\n",regis,registers->V[regis]);
 
 				printf("[*] After MOV:\n");
-				registersee(r,r);
-				r->IP++;
+				registersee(s);
+				s->registers->IP++;
 				break;
 
 			//jmp
 			case 0xff:
-				unsigned char addr = memory[++r->IP];
+				unsigned char addr = s->memory[++(s->registers->IP)];
 
 				if(addr < 0 || addr > MEM_SIZE){
 					rand_roast();
@@ -56,41 +56,43 @@ void readinstr(Registers *r,unsigned char* memory){
 					exit(0);
 				}
 
-				r->IP = addr;
+				s->registers->IP = addr;
 				break;
 
 			// cmp
 			case 0x41:
-				if(r->IP < 0x10 && r->IP >= 0x0){
-					unsigned char regis1 = memory[++r->IP];
-					unsigned char _val = memory[++r->IP];
+				if(s->registers->IP < 0x10 && s->registers->IP >= 0x0){
+					unsigned char regis1 = s->memory[++(s->registers->IP)];
+					unsigned char _val = s->memory[++(s->registers->IP)];
 
-					//printf("register:%d\nval at register:%x\nval:%x\n",regis1,r->V[regis1],_val);
+					//printf("register:0x%.2x\nval at register:0x%.2x\nval:0x%.2x\n",regis1,s->registers->V[regis1],_val);
+					//printf("IP: 0x%.2x",s->registers->IP);
 
 					if(regis1 < 0 || regis1 > 2){
 						rand_roast();
 						printf(ANSI_COLOR_BLUE);
 						printf("Hint : ");
 						printf(ANSI_COLOR_RESET);
-						printf("Illegal operation , there are only 2 registers!\n");
+						printf("[At 0x41, CMP]Illegal operation , there are only 2 registers!\n");
 						exit(0);
 					}
 
-					if(r->V[regis1] == _val)
-						r->flag[regis1] = true;
+					if(s->registers->V[regis1] == _val)
+						s->registers->flag[regis1] = true;
 					else
-						r->flag[regis1] = false;
+						s->registers->flag[regis1] = false;
 
-					if(r->V[regis1] != _val)
-						printf("[*] Register %d difference : 0x%.2hhx\n",regis1, r->V[regis1] - _val);
+					if(s->registers->V[regis1] != _val)
+						printf("[*] Register %d difference : 0x%.2hhx\n",regis1, s->registers->V[regis1] - _val);
 
-					//printf("Flag of %d is %d\n",regis1,r->flag[regis1]);
-					r->IP++;
+						//printf("Flag of %d is %d\n",regis1,registers->flag[regis1]);
+					s->registers->IP++;
 					break;
-					}
-					else{
+
+				}
+				else{
 						rand_roast();
-						printf("Instr => 0x%.2x at 0x%.2x\n",memory[r->IP],r->IP);
+						printf("Instr => 0x%.2x at 0x%.2x\n",s->memory[s->registers->IP],s->registers->IP);
 						printf(ANSI_COLOR_BLUE);
 						printf("Hint : ");
 						printf(ANSI_COLOR_RESET);
@@ -100,9 +102,9 @@ void readinstr(Registers *r,unsigned char* memory){
 
 			// getflag
 			case 0x69:
-				if(r->IP < 0x10 && r->IP >= 0x0){
-					if(r->flag[0] && r->flag[1]){
-						read_script("ending.txt");
+				if(s->registers->IP < 0x10 && s->registers->IP >= 0x0){
+					if(s->registers->flag[0] && s->registers->flag[1]){
+						read_script("src/story/ending.txt");
 						unsigned char enc_flag[] = {
 						    0x37, 0x27, 0x34, 0x20, 0x3b, 0x2e,
 						    0x22, 0x30, 0x0a, 0x34, 0x27, 0x30,
@@ -122,7 +124,7 @@ void readinstr(Registers *r,unsigned char* memory){
 				}
 				else{
 					rand_roast();
-					printf("Instr => 0x%.2x at 0x%.2x\n",memory[r->IP],r->IP);
+					printf("Instr => 0x%.2x at 0x%.2x\n",s->memory[s->registers->IP],s->registers->IP);
 					printf(ANSI_COLOR_BLUE);
 					printf("Hint : ");
 					printf(ANSI_COLOR_RESET);

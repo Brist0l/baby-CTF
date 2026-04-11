@@ -3,6 +3,7 @@
 
 #define MEM_SIZE 128
 
+
 #include<stdbool.h>
 
 typedef struct _registers{
@@ -11,6 +12,14 @@ typedef struct _registers{
 	bool flag[0x2];
 }Registers;
 
-void readinstr(Registers *r,unsigned char* memory);
+typedef struct{
+	Registers *registers;
+	Registers *registers_prev;
+	unsigned char *memory;
+	unsigned char *memory_prev;
+
+}System;
+
+void readinstr(System* s);
 
 #endif
