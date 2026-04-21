@@ -15,22 +15,6 @@ void destroy(System *s){
 	free(s);
 }
 
-void initsys(System *s){
-	srand(time(NULL));
-
-	s->registers = malloc(sizeof(Registers));
-	s->registers_prev = malloc(sizeof(Registers));
-	s->memory = (unsigned char*) malloc(sizeof(unsigned char) *  MEM_SIZE);
-	s->memory_prev = (unsigned char*) malloc(sizeof(unsigned char) * MEM_SIZE);
-
-	// set memory to random variables
-	for(int i = 0; i < MEM_SIZE; i++)
-		s->memory[i] = rand() % 0xff;
-	//memset(memory,0,MEM_SIZE);
-	memset(s->registers,0,sizeof(Registers));
-	memcpy(s->memory_prev,s->memory,MEM_SIZE);
-	memcpy(s->registers_prev,s->registers,sizeof(Registers));
-}
 
 bool memchk(unsigned char* mem1,char* mem2,int buf1,int buf2,int n){
 	for(int i = 0;i < n;i++){

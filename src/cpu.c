@@ -1,16 +1,50 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<stdbool.h>
+#include<string.h>
+#include<time.h>
 
 #include "cpu.h"
 #include "helper.h"
 
+/* ISA:
+ * 0x90 => NOP
+ * 0x01 => MOV
+ * 0xff => JMP
+ * 0x41 => CMP
+ * 0x69 => GETFLG
+ * 0xca => CALL
+ * 0x4e => RET
+ * 0x3e => GETINP
+ * 0xe4 => EXT
+ * 0x1a => IGNR
+ */
+
+
+void initsys(System *s){
+	srand(time(NULL));
+
+	s->registers = malloc(sizeof(Registers));
+	s->registers_prev = malloc(sizeof(Registers));
+	s->memory = (unsigned char*) malloc(sizeof(unsigned char) *  MEM_SIZE);
+	s->memory_prev = (unsigned char*) malloc(sizeof(unsigned char) * MEM_SIZE);
+
+	// set memory to random variables
+	for(int i = 0; i < MEM_SIZE; i++)
+		s->memory[i] = rand() % 0xff;
+	//memset(memory,0,MEM_SIZE);
+	memset(s->registers,0,sizeof(Registers));
+	memcpy(s->memory_prev,s->memory,MEM_SIZE);
+	memcpy(s->registers_prev,s->registers,sizeof(Registers));
+
+	s->registers->SP = STK_STRT;
+	s->registers->flag[0] = false;
+	s->registers->flag[1] = false;
+}
+
 void readinstr(System* s){
 	//for(int i = 0; i < 10;i++)
 		//printf("%d => 0x%.2x\n",i,*(memory + registers->IP + i));
-
-	s->registers->flag[0] = false;
-	s->registers->flag[1] = false;
 
 	while(s->registers->IP < MEM_SIZE){
 	//	printf("IP = %x and mem = %x\n",registers->IP,memory[registers->IP]);
@@ -26,7 +60,7 @@ void readinstr(System* s){
 				unsigned char regis = s->memory[++(s->registers->IP)];
 				unsigned char val = s->memory[++(s->registers->IP)];
 
-				if(regis < 0 || regis > 2){
+	if(regis < 0 || regis > 2){
 					rand_roast();
 					printf(ANSI_COLOR_BLUE);
 					printf("Hint : ");
@@ -40,7 +74,7 @@ void readinstr(System* s){
 
 				printf("[*] After MOV:\n");
 				registersee(s);
-				s->registers->IP++;
+	s->registers->IP++;
 				break;
 
 			//jmp
@@ -104,7 +138,7 @@ void readinstr(System* s){
 			case 0x69:
 				if(s->registers->IP < 0x10 && s->registers->IP >= 0x0){
 					if(s->registers->flag[0] && s->registers->flag[1]){
-						read_script("src/story/ending.txt");
+						read_script("src/story/ending_baby2.txt");
 						unsigned char enc_flag[] = {
 						    0x37, 0x27, 0x34, 0x20, 0x3b, 0x2e,
 						    0x22, 0x30, 0x0a, 0x34, 0x27, 0x30,
@@ -133,9 +167,84 @@ void readinstr(System* s){
 					exit(0);
 					}
 
+	break;
+
+			// call
+			case 0xca:
+				unsigned char func_addr = s->memory[++(s->registers->IP)];
+
+				if(func_addr < 0 || func_addr > MEM_SIZE){
+					rand_roast();
+					printf(ANSI_COLOR_BLUE);
+					printf("Hint : ");
+					printf(ANSI_COLOR_RESET);
+					printf("[0xca CALL]Address out of bounds!\n");
+					exit(0);
+				}
+
+				int x = (s->registers->SP)++;
+				printf("x => 0x%.2x\n",x);
+				s->memory[x] = ++(s->registers->IP);
+				printf("Written 0x%.2x at 0x%.2x\n",--s->registers->IP,--x);
+				s->registers->IP = func_addr;
+
+				break;
+
+			// ret
+			case 0x4e:
+				s->registers->IP = s->memory[--(s->registers->SP)];
+				printf("Returning to 0x%.2x\n",s->registers->IP);
+				break;
+
+			// get input
+			case 0x3e:
+				unsigned char write_addr = s->memory[++(s->registers->IP)];
+				bool new_line = false;
+				printf("\n=>");
+
+				//while(new_line == false){
+					//for(int i = 0; i < 5;i++){
+						//s->registers->cache[i] = getchar();
+						//if(s->registers->cache[i] == '\n'){
+							//new_line =true;
+							//break;
+						//}
+					//for(int i = 0; i < 5; i++)
+						//s->memory[write_addr++] = s->registers->cache[i];
+				//}
+
+				while(new_line == false){
+					char i = getchar();
+
+					if(i == '\n'){
+						new_line = true;
+						break;
+					}
+
+					s->memory[write_addr++] = i;
+				}
+
+				s->registers->IP++;
+
+				break;
+
+			// exit
+			case 0xe4:
+				printf("Yea , goodbye my man.\n");
+				exit(0);
+				break;
+
+			//ignore flags
+			case 0x1a:
+				s->registers->flag[0] = true;
+				s->registers->flag[1] = true;
+				printf("Register flags Set !\n");
+				s->registers->IP++;
 				break;
 
 			default:
+				memsee(s,MEM_SIZE,0x0,0x0);
+				printf("instr : 0x%.2x\n",s->memory[s->registers->IP]);
 				rand_roast();
 				printf(ANSI_COLOR_BLUE);
 				printf("Hint : ");
